@@ -1,0 +1,13 @@
+
+# Executables
+*.out
+*.app
+/.vs
+/.vscode
+
+# Directory
+/build
+/bin
+/install
+/lib
+/install_3D_viewer
