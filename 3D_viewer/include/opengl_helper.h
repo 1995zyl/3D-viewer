@@ -26,6 +26,8 @@ namespace OpenGLHelper
         int m_zRot = 0;                     // 绕z轴旋转的角度
         qreal m_xTrans = 0.0;               // 沿x轴移动的位置
         qreal m_yTrans = 0.0;               // 沿y轴移动的位置
+        float m_zNear = 0.01;               // 透视矩阵视野最小值，太小容易出现黑影
+        float m_zFar = 10000.0;             // 透视矩阵视野最大值
     };
 
     //////////////////////////////////////////////////////////////////

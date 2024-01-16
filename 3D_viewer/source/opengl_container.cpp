@@ -3,7 +3,7 @@
 #include "spdlog/spdlog.h"
 
 static std::array<int, 4> s_timerIntervals{600, 200, 150, 100};
-static std::array<float, 6> s_wheelScales{0.25, 0.5, 1.0, 2.5, 5.0};
+static std::array<float, 7> s_wheelScales{0.10, 0.40, 0.70, 1.0, 2.0, 5.0, 10.0};
 
 OpenGLContainer::OpenGLContainer(QWidget *parent)
     : QWidget(parent), m_openGLWindow(new OpenGLWindow("", Qt::black, this))

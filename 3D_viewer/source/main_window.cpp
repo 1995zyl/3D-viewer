@@ -30,11 +30,13 @@ void MainWindow::initUI()
 
     m_wheelScaleCom->setPlaceholderText(tr("wheel scale"));
     m_animationCom->setPlaceholderText(tr("quick animation"));
-    m_wheelScaleCom->addItem("25%");
-    m_wheelScaleCom->addItem("50%");
+    m_wheelScaleCom->addItem("10%");
+    m_wheelScaleCom->addItem("40%");
+    m_wheelScaleCom->addItem("70%");
     m_wheelScaleCom->addItem("100%");
     m_wheelScaleCom->addItem("200%");
     m_wheelScaleCom->addItem("500%");
+    m_wheelScaleCom->addItem("1000%");
     m_animationCom->addItem(tr("No"));
     m_animationCom->addItem(tr("Turntable"));
     m_animationCom->addItem(tr("Sway"));

@@ -7,7 +7,7 @@
 #define WHEEL_MAX (10 * 10 * 10 * 10)
 #define TIMER_ROTATE_ANGLE 45
 #define TIMER_ROTATE_NUM 50
-#define TIMER_HOVER_HEIGHT 10
+#define TIMER_HOVER_HEIGHT 4
 
 static const std::array<float, 3> sLightPos{ 1.2f, 1.0f, 2.0f };
 static const std::array<float, 3>  sLightColorLoc{ 1.0f, 1.0f, 1.0f };
@@ -31,8 +31,6 @@ OpenGLWindow::OpenGLWindow(const QString &modelPath, const QColor &color, QWidge
     }
 
     initializeZoom();
-    //m_elapsedTimer.start();
-
     connect(&m_fpsTimer, &QTimer::timeout, this, &OpenGLWindow::onFpsTimeOut);
     connect(&m_animationTimer, &QTimer::timeout, this, &OpenGLWindow::onAnimationTimeOut);
 }
@@ -75,11 +73,42 @@ void OpenGLWindow::initializeZoom()
 
     spdlog::info("model max position is {}.", maxPosition);
     if (maxPosition < 5)
+    {
         m_cameraDistance = maxPosition * 5;
+        m_camera.m_zNear = 0.01;
+        m_camera.m_zFar = maxPosition * 100;
+    }
     else if (maxPosition < 100)
-        m_cameraDistance = maxPosition * 2.5;
+    {
+        m_cameraDistance = maxPosition * 3;
+        m_camera.m_zNear = 0.05;
+        m_camera.m_zFar = maxPosition * 50;
+    }
+    else if (maxPosition < 1000)
+    {
+        m_cameraDistance = maxPosition * 3;
+        m_camera.m_zNear = 0.05;
+        m_camera.m_zFar = maxPosition * 30;
+    }
+    else if (maxPosition < 2000)
+    {
+        m_cameraDistance = maxPosition * 4;
+        m_camera.m_zNear = 0.07;
+        m_camera.m_zFar = maxPosition * 10;
+    }
+    else if (maxPosition < 3000)
+    {
+        m_cameraDistance = maxPosition * 4.5;
+        m_camera.m_zNear = 0.4;
+        m_camera.m_zFar = maxPosition * 10;
+    }
     else
-        m_cameraDistance = maxPosition * 1;
+    {
+        m_cameraDistance = maxPosition * 4.5;
+        m_camera.m_zNear = 0.5;
+        m_camera.m_zFar = maxPosition * 10;
+    }
+
     m_camera.m_eye.setZ(m_camera.m_zoom * m_cameraDistance);
 }
 
@@ -126,9 +155,8 @@ void OpenGLWindow::paintGL()
 void OpenGLWindow::resizeGL(int w, int h)
 {
     qreal aspect = qreal(w) / qreal(h ? h : 1);
-    const qreal zNear = 0.001, zFar = 1000.0;
     m_camera.m_projection.setToIdentity();
-    m_camera.m_projection.perspective(m_camera.m_fovy, aspect, zNear, zFar);
+    m_camera.m_projection.perspective(m_camera.m_fovy, aspect, m_camera.m_zNear, m_camera.m_zFar);
 }
 
 void OpenGLWindow::mousePressEvent(QMouseEvent *e)
