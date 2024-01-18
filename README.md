@@ -2,7 +2,7 @@
 基于Qt及OpenGL的简易3D模型查看器
 
 ### 使用环境
-1、本地需要安装cmake工具与visual studio。cmake版本为3.23左右，vs版本为vs2022左右。
+1、本地需要安装cmake工具与visual studio。cmake版本为3.23左右，vs版本为vs2022左右。由于三方库只编译了Windows的release版，工程只能运行在Windows x64 RelWithDebInfo/Release下。
 
 2、工程依赖的Qt(6.5)、assimp、stb及spdlog等以三方库的形式上传到该工程的third_libray目录了，本地不再需要这些依赖。
 
