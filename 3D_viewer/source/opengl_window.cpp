@@ -1,7 +1,6 @@
 #include "opengl_window.h"
 #include "spdlog/spdlog.h"
 #include <QFile>
-#include <QPainter>
 
 #define WHEEL_MIN (0.1 * 0.1)
 #define WHEEL_MAX (10 * 10 * 10 * 10)
@@ -141,9 +140,9 @@ void OpenGLWindow::paintGL()
 
     QMatrix4x4 m1, m2;
     m1.lookAt(m_camera.m_eye, m_camera.m_center, m_camera.m_up);
-    m1 = m1 * rotation;
+    m1 *= rotation;
     m2.translate(m_camera.m_xTrans, -1.0 * m_camera.m_yTrans, 0);
-    m2 = m2 * m_camera.m_translation;
+    m2 *= m_camera.m_translation;
 
     glUniformMatrix4fv(glGetUniformLocation(m_glslProgramId, "projection"), 1, GL_FALSE, m_camera.m_projection.data());
     glUniformMatrix4fv(glGetUniformLocation(m_glslProgramId, "view"), 1, GL_FALSE, m2.data());
