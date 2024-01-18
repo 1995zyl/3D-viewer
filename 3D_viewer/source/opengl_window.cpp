@@ -6,7 +6,7 @@
 #define WHEEL_MAX (10 * 10 * 10 * 10)
 #define TIMER_ROTATE_ANGLE 45
 #define TIMER_ROTATE_NUM 50
-#define TIMER_HOVER_HEIGHT 4
+#define TIMER_HOVER_HEIGHT 3
 
 static const std::array<float, 3> sLightPos{ 1.2f, 1.0f, 2.0f };
 static const std::array<float, 3>  sLightColorLoc{ 1.0f, 1.0f, 1.0f };
