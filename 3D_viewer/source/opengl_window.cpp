@@ -131,7 +131,6 @@ void OpenGLWindow::paintGL()
 
     glUseProgram(m_glslProgramId);
 
-    // 先将物体进行旋转，再进行平移缩放等其他变换
     QMatrix4x4 rotation;
     rotation.rotate(qreal(m_camera.m_zRot) / 16.0f, 0.0f, 0.0f, 1.0f);
     rotation.rotate(qreal(m_camera.m_yRot) / 16.0f, 0.0f, 1.0f, 0.0f);
