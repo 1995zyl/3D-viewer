@@ -11,6 +11,6 @@
 ### 编译过程
 1、git clone https://github.com/1995zyl/3D-viewer.git
 
-2、在工程中新建build目录，利用cmake工程生成vs工程，不指定CMAKE_INSTALL_PREFIX，会默认安装到当前工程的install_3D_viewer目录下。对生成的vs工程的INSTALL目标进行编译即可安装
+2、在工程中新建build目录，利用cmake工程生成vs工程，修改解决方案类型为RelWithDebInfo。默认安装到当前工程的install_3D_viewer目录下，对生成的vs工程的INSTALL目标进行编译即可安装
 
-3、宏START_INFO_CONSOLE控制是否开启debug控制台，用于观察是否有报错日志，打开后会产生两个窗口
+3、宏START_INFO_CONSOLE控制是否开启debug控制台，定义在CMakeLists.txt中，用于观察是否有报错日志，打开后会产生两个窗口
