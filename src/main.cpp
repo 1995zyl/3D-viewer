@@ -1,6 +1,9 @@
 ﻿#include "main_window.h"
 #include <QApplication>
 #include <QTranslator>
+#ifdef WIN32
+#include <windows.h>
+#endif
 
 namespace
 {

@@ -1,70 +1,28 @@
-cmake_minimum_required(VERSION 3.10.0)
+cmake_minimum_required(VERSION 3.18)
 
-project(3D_viewer VERSION 1.0)
+project(3D_viewer 
+    VERSION 2.0
+    DESCRIPTION "main project"
+    HOMEPAGE_URL "https://github.com/1995zyl/3D-viewer"
+    LANGUAGES CXX
+)
 
-MESSAGE(STATUS "operation system is ${CMAKE_SYSTEM}")
-
-set(CMAKE_BUILD_TYPE RelWithDebInfo)
-
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE RelWithDebInfo)
-    message(STATUS "RelWithDebInfo is on!!!")
-else()
-    message(STATUS "CMAKE_BUILD_TYPE = " ${CMAKE_BUILD_TYPE})
-endif()
-
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-set(CMAKE_CXX_FLAGS "/permissive- /Zc:__cplusplus")
 
-include(${CMAKE_INCLUDE_PATH}/qt_library.cmake)
-include(${CMAKE_INCLUDE_PATH}/third_library.cmake)
-include_qt_library()
-include_third_library_path()
-
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/install_3D_viewer)
-set(THIRD_LIBRARY_PATH ${PROJECT_SOURCE_DIR}/third_library)
-
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 link_directories(${LIBRARY_OUTPUT_PATH})
 
-add_subdirectory(3D_viewer)
+message(STATUS "CMAKE_BUILD_TYPE = " ${CMAKE_BUILD_TYPE})
+message(STATUS "CMAKE_INSTALL_PREFIX = " ${CMAKE_INSTALL_PREFIX})
 
-# copy to bin
-file(GLOB QT_DLL "${QT_PATH}/bin/*.dll")
-file(COPY ${QT_DLL} DESTINATION ${PROJECT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/3d_viewer.cmake)
+find_qt_package()
+find_assimp_library()
+find_stb_library()
+find_spdlog_library()
 
-file(GLOB QT_PLUGINS_DLL "${QT_PATH}/plugins")
-file(COPY ${QT_PLUGINS_DLL} DESTINATION ${PROJECT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
-
-copy_third_library_dll()
-
-# install
-set(QT_NEED_INSTALL 
-    ${QT_PATH}/bin/Qt6Core.dll 
-    ${QT_PATH}/bin/Qt6Gui.dll 
-    ${QT_PATH}/bin/Qt6Widgets.dll
-    ${QT_PATH}/bin/Qt6OpenGL.dll
-    ${QT_PATH}/bin/Qt6OpenGLWidgets.dll
-    ${QT_PATH}/bin/Qt6Svg.dll
-)
-INSTALL(FILES ${QT_NEED_INSTALL}
-       DESTINATION ${CMAKE_INSTALL_PREFIX}
-)
-
-install_third_library()
-
-set(QT_PLUGINS 
-    ${QT_PATH}/plugins/platforms
-    ${QT_PATH}/plugins/styles
-    ${QT_PATH}/plugins/iconengines
-)
-INSTALL(DIRECTORY ${QT_PLUGINS}
-       DESTINATION ${CMAKE_INSTALL_PREFIX}/plugins
-)
-
-file(GLOB RESOURCE_PATH ${PROJECT_SOURCE_DIR}/3D_viewer_resource)
-INSTALL(DIRECTORY ${RESOURCE_PATH}
-    DESTINATION ${CMAKE_INSTALL_PREFIX}
-)
+add_subdirectory(src)

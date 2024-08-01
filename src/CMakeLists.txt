@@ -28,6 +28,9 @@ target_include_directories(${TARGET} PRIVATE
        "${QT_SDK_DIR}/include/Qt3DRender/6.5.2"
        "${QT_SDK_DIR}/include/QtCore/6.5.2/QtCore"
        "${QT_SDK_DIR}/include/Qt3DRender/6.5.2/Qt3DRender"
+       ${ASSIMP_PATH}/include
+       ${SPDLOG_PATH}
+       ${STB_PATH}
 )
 
 target_link_libraries(${TARGET}

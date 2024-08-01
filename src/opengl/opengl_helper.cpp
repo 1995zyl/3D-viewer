@@ -200,7 +200,7 @@ namespace OpenGLHelper
             aiString str;
             if (aiReturn_SUCCESS != mat->GetTexture(type, i, &str))
             {
-                spdlog::error("aiMaterial get texture failed. ai texture type: {}", type);
+                spdlog::error("aiMaterial get texture failed. ai texture type: {}", (int)type);
                 continue;
             }
 
