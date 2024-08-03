@@ -24,7 +24,7 @@ OpenGLWindow::OpenGLWindow(const QString &modelPath, const QColor &color, QWidge
     m_modelPath = modelPath;
     if (!modelPath.isEmpty())
     {
-        OpenGLHelper::import3DModel(modelPath, m_modelMeshs);
+        OpenGLHelper::import3DModel(modelPath, m_modelMeshsPtr);
         m_fpsLabel->show();
         m_fpsTimer.setInterval(1000);
         m_fpsTimer.start();
@@ -37,11 +37,14 @@ OpenGLWindow::OpenGLWindow(const QString &modelPath, const QColor &color, QWidge
 
 OpenGLWindow::~OpenGLWindow()
 {
-    for (auto &modelMesh : m_modelMeshs)
+    if (m_modelMeshsPtr)
     {
-        glDeleteVertexArrays(1, &modelMesh.m_VAO);
-        glDeleteBuffers(1, &modelMesh.m_VBO);
-        glDeleteBuffers(1, &modelMesh.m_EBO);
+        for (const auto &modelMesh : *m_modelMeshsPtr)
+        {
+            glDeleteVertexArrays(1, &modelMesh.m_VAO);
+            glDeleteBuffers(1, &modelMesh.m_VBO);
+            glDeleteBuffers(1, &modelMesh.m_EBO);
+        }
     }
 }
 
@@ -59,18 +62,10 @@ void OpenGLWindow::initializeFpsLabel()
 
 void OpenGLWindow::initializeZoom()
 {
-    if (m_modelMeshs.isEmpty())
+    if (!m_modelMeshsPtr || m_modelMeshsPtr->isEmpty())
         return;
 
-    float maxPosition = 1.0;
-    for (const auto &modelMesh : m_modelMeshs)
-    {
-        for (const auto &vertex : modelMesh.m_vertices)
-        {
-            maxPosition = qMax(qMax(qMax(qAbs(vertex.m_positions[0]), qAbs(vertex.m_positions[1])), qAbs(vertex.m_positions[2])), maxPosition);
-        }
-    }
-
+    float maxPosition = OpenGLHelper::getModelMaxPos(m_modelPath);
     spdlog::info("model max position is {}.", maxPosition);
     if (maxPosition < 5)
     {
@@ -265,7 +260,10 @@ void OpenGLWindow::releasePos(Qt::MouseButton mbType)
 
 void OpenGLWindow::initializeMesh()
 {
-    for (auto &modelMesh : m_modelMeshs)
+    if (!m_modelMeshsPtr)
+        return;
+
+    for (auto &modelMesh : *m_modelMeshsPtr)
     {
         for (auto &texture : modelMesh.m_textures)
         {
@@ -343,7 +341,10 @@ void OpenGLWindow::initializeMesh()
 
 void OpenGLWindow::paintMesh()
 {
-    for (auto &modelMesh : m_modelMeshs)
+    if (!m_modelMeshsPtr)
+        return;
+
+    for (const auto &modelMesh : *m_modelMeshsPtr)
     {
         // bind appropriate textures
         unsigned int diffuseNr = 1;

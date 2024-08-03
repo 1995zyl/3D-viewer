@@ -33,7 +33,6 @@ private:
     QComboBox *m_animationCom = nullptr;
     QComboBox *m_animationSpeedCom = nullptr;
     RenderContainer *m_renderContainer = nullptr;
-
     QString m_title;
 };
 #endif

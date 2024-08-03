@@ -8,8 +8,14 @@
 
 namespace OpenGLHelper
 {
-    QString sModelName;
-    Assimp::Importer importer;
+    static QMap<QString, std::shared_ptr<QVector<ModelMesh>>> sModelMeshMaps;
+    static QMap<QString, float> sModelMaxPosMaps;
+    static QString sCurrentModelName;
+    static Assimp::Importer importer;
+
+    void processNode(aiNode *node, const aiScene *scene, QVector<ModelMesh> &modelMeshs);
+    void processMesh(aiMesh *mesh, const aiScene *scene, ModelMesh &modelMesh);
+    void loadMaterialTextures(aiMaterial *mat, aiTextureType type, const std::string &typeName, const aiScene *scene, std::vector<Texture> &textures);
 
     bool parseObjModel(const QString &modelPath, ObjData &objData)
     {
@@ -89,8 +95,19 @@ namespace OpenGLHelper
         return true;
     }
 
-    bool import3DModel(const QString &modelPath, QVector<ModelMesh> &modelMeshs)
+    bool import3DModel(const QString &modelPath, std::shared_ptr<QVector<ModelMesh>> &modelMeshsPtr)
     {
+        if (modelPath.isEmpty())
+        {
+            spdlog::error("model path is empty. modelPath: {0}", modelPath.toStdString());
+            return false;
+        }
+        else if (sModelMeshMaps.contains(modelPath))
+        {
+            modelMeshsPtr = sModelMeshMaps[modelPath];
+            return true;
+        }
+        
         stbi_set_flip_vertically_on_load(true);
 
         const aiScene *scene = importer.ReadFile(modelPath.toStdString(),
@@ -100,10 +117,11 @@ namespace OpenGLHelper
             spdlog::error("importer read file failed. file: {0}, reason: {1}", modelPath.toStdString(), importer.GetErrorString());
             return false;
         }
-        sModelName = modelPath;
+        sCurrentModelName = modelPath;
+        sModelMeshMaps.insert(modelPath, std::make_shared<QVector<ModelMesh>>());
 
-        processNode(scene->mRootNode, scene, modelMeshs);
-
+        processNode(scene->mRootNode, scene, *sModelMeshMaps[modelPath]);
+        modelMeshsPtr = sModelMeshMaps[modelPath];
         return true;
     }
 
@@ -209,21 +227,52 @@ namespace OpenGLHelper
             const aiTexture *aiTex = scene->GetEmbeddedTexture(str.C_Str());
             if (aiTex)
             {
+                bool iscompressed = aiTex->mHeight == 0;
+                uint textureSize = aiTex->mWidth * (iscompressed ? 1 : aiTex->mHeight);
                 // glb格式文件的纹理信息直接在模型上，其它格式文件的纹理信息保存在单独的文件中
-                if (aiTex->mHeight == 0)
-                    texture.m_data = stbi_load_from_memory(reinterpret_cast<unsigned char *>(aiTex->pcData), aiTex->mWidth,
-                                                           &texture.m_width, &texture.m_height, &texture.m_channel, 0);
-                else
-                    texture.m_data = stbi_load_from_memory(reinterpret_cast<unsigned char *>(aiTex->pcData), aiTex->mWidth * aiTex->mHeight,
+                texture.m_data = stbi_load_from_memory(reinterpret_cast<unsigned char *>(aiTex->pcData), textureSize,
                                                            &texture.m_width, &texture.m_height, &texture.m_channel, 0);
             }
             else
             {
-                QString filename = QFileInfo(sModelName).filePath() + '/' + filename;
+                QString filename = QFileInfo(sCurrentModelName).filePath() + '/' + filename;
                 texture.m_data = stbi_load(filename.toStdString().c_str(), &texture.m_width, &texture.m_height, &texture.m_channel, 0);
             }
             textures.emplace_back(texture);
         }
+    }
+
+    float getModelMaxPos(const QString &modelPath)
+    {
+        if (modelPath.isEmpty())
+        {
+            spdlog::error("model path is empty. modelPath: {0}", modelPath.toStdString());
+            return false;
+        }
+
+        if (sModelMaxPosMaps.contains(modelPath))
+            return sModelMaxPosMaps[modelPath];
+
+        float maxPosition = 1.0;
+        if (!sModelMeshMaps.contains(modelPath))
+        {
+            std::shared_ptr<QVector<ModelMesh>> modelMeshsPtr;
+            import3DModel(modelPath, modelMeshsPtr);
+            if (!sModelMeshMaps.contains(modelPath))
+                return maxPosition;
+        }
+        
+        for (const auto &modelMesh : *sModelMeshMaps[modelPath])
+        {
+            for (const auto &vertex : modelMesh.m_vertices)
+            {
+                maxPosition = qMax(qMax(qMax(qAbs(vertex.m_positions[0]), qAbs(vertex.m_positions[1])), qAbs(vertex.m_positions[2])), maxPosition);
+            }
+        }
+
+        spdlog::info("model name: {0}, max position: {1}.", modelPath.toStdString(), maxPosition);
+        sModelMaxPosMaps.insert(modelPath, maxPosition);
+        return maxPosition;
     }
 
     void cleanImageData(unsigned char *data)

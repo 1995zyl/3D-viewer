@@ -35,8 +35,7 @@ private:
     void reloadRenderWindow();
 
 private:
-    QMap<RenderMode, std::shared_ptr<IDrawInterface>> m_renderWindowLists;
-    std::shared_ptr<IDrawInterface> m_renderWindow;
+    QMap<RenderMode, IDrawInterface*> m_renderWindows;
     RenderMode m_renderMode;
     QColor m_color;
     int m_animationType = 0;

@@ -1,16 +1,17 @@
 # 3D-viewer
-基于Qt及OpenGL的简易3D模型查看器
-
-### 使用环境
-1、本地需要安装cmake工具与visual studio。cmake版本为3.23左右，vs版本为vs2022左右。由于三方库只编译了Windows的release版，工程只能运行在Windows x64 RelWithDebInfo/Release下。
-
-2、工程依赖的Qt(6.5)、assimp、stb及spdlog等以三方库的形式上传到该工程的third_libray目录了，本地不再需要这些依赖。
-
-3、支持*.glb;*.obj;*.fbx;等格式，实际上只测试过glb格式，其他格式理论支持，实际没有调试。
+基于Qt的简易3D模型查看器
+依赖assimp、stb及spdlog
+采用Qt3D模块渲染3d模型，但qt原生的assimpsceneimport库不支持glb格式，改进了一下支持glb格式，依赖assimpsceneimportex插件
+支持*.glb;*.obj;*.fbx;等格式，实际上只测试过glb格式，其他格式理论支持，实际没有调试。
 
 ### 编译过程
-1、git clone https://github.com/1995zyl/3D-viewer.git
-
-2、在工程中新建build目录，利用cmake工程生成vs工程，修改解决方案类型为RelWithDebInfo。默认安装到当前工程的install_3D_viewer目录下，对生成的vs工程的INSTALL目标进行编译即可安装
-
-3、宏START_INFO_CONSOLE控制是否开启debug控制台，定义在CMakeLists.txt中，用于观察是否有报错日志，打开后会产生两个窗口
+编译AssimpSceneImportExPlugin及assimp
+1、git clone --recursive https://github.com/1995zyl/3D-viewer.git
+2、cd 3rdparty/assimpSceneImportExPlugin
+3、mkdir build & cd build
+4、cmake .. -DCMAKE_BUILD_TYPE=Release -DQT_SDK_DIR=D:/Qt/6.5.2/msvc2019_64
+5、make -j4 & make install # 将插件安装到qt目录中
+6、cd ../../..
+7、mkdir build & cd build
+8、cmake .. -DCMAKE_BUILD_TYPE=Release -DQT_SDK_DIR=D:/Qt/6.5.2/msvc2019_64 -DCMAKE_INSTALL_PREFIX=D:/GitHub/3D-viewer/install
+9、make -j4 & make install

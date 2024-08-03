@@ -74,10 +74,8 @@ namespace OpenGLHelper
         unsigned int m_EBO;
     };
 
-    bool import3DModel(const QString &modelPath, QVector<ModelMesh> &modelMeshs);
-    void processNode(aiNode *node, const aiScene *scene, QVector<ModelMesh> &modelMeshs);
-    void processMesh(aiMesh *mesh, const aiScene *scene, ModelMesh &modelMesh);
-    void loadMaterialTextures(aiMaterial *mat, aiTextureType type, const std::string &typeName, const aiScene *scene, std::vector<Texture> &textures);
+    bool import3DModel(const QString &modelPath, std::shared_ptr<QVector<ModelMesh>> &modelMeshsPtr);
+    float getModelMaxPos(const QString &modelPath);
     void cleanImageData(unsigned char *data);
 };
 

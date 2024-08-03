@@ -3,8 +3,8 @@
 #include "qt3d/qt3d_window.h"
 #include "spdlog/spdlog.h"
 
-static std::array<int, 4> s_timerIntervals{600, 200, 150, 100};
-static std::array<float, 7> s_wheelScales{0.10, 0.40, 0.70, 1.0, 2.0, 5.0, 10.0};
+static const std::array<int, 4> s_timerIntervals{600, 200, 150, 100};
+static const std::array<float, 7> s_wheelScales{0.10, 0.40, 0.70, 1.0, 2.0, 5.0, 10.0};
 
 RenderContainer::RenderContainer(RenderMode renderMode, QWidget *parent)
     : QWidget(parent), m_renderMode(renderMode)
@@ -14,21 +14,26 @@ RenderContainer::RenderContainer(RenderMode renderMode, QWidget *parent)
 
 RenderContainer::~RenderContainer()
 {
+    for (const auto renderWindow : m_renderWindows)
+    {
+        if (renderWindow != nullptr)
+            delete renderWindow;
+    }
 }
 
 void RenderContainer::resizeEvent(QResizeEvent *e)
 {
-    m_renderWindow->resizeEx(e->size());
+    m_renderWindows[m_renderMode]->resizeEx(e->size());
     return QWidget::resizeEvent(e);
 }
 
 void RenderContainer::setDrawMode(RenderMode renderMode)
 {
-    m_renderWindow->hideEx();
+    m_renderWindows[m_renderMode]->hideEx();
     m_renderMode = (RenderMode)renderMode;
     reloadRenderWindow();
-    m_renderWindow->resizeEx(size());
-    m_renderWindow->showEx();
+    m_renderWindows[m_renderMode]->resizeEx(size());
+    m_renderWindows[m_renderMode]->showEx();
 }
 
 void RenderContainer::loadModel(const QString &modelPath)
@@ -41,14 +46,14 @@ void RenderContainer::loadModel(const QString &modelPath)
 
     m_modelPath = modelPath;
     reloadRenderWindow();
-    m_renderWindow->resizeEx(size());
-    m_renderWindow->showEx();
+    m_renderWindows[m_renderMode]->resizeEx(size());
+    m_renderWindows[m_renderMode]->showEx();
 }
 
 void RenderContainer::setBgColor(const QColor &color)
 {
     m_color = color;
-    m_renderWindow->setBgColor(m_color);
+    m_renderWindows[m_renderMode]->setBgColor(m_color);
 }
 
 void RenderContainer::setWheelScale(int index)
@@ -59,20 +64,20 @@ void RenderContainer::setWheelScale(int index)
         return;
     }
 
-    m_renderWindow->setWheelScale(s_wheelScales[index]);
+    m_renderWindows[m_renderMode]->setWheelScale(s_wheelScales[index]);
 }
 
 void RenderContainer::startAnimation(int index)
 {
     m_animationType = index;
-    m_renderWindow->stopAnimation();
-    m_renderWindow->startAnimation(static_cast<OpenGLWindow::AnimationType>(m_animationType),
+    m_renderWindows[m_renderMode]->stopAnimation();
+    m_renderWindows[m_renderMode]->startAnimation(static_cast<OpenGLWindow::AnimationType>(m_animationType),
                                    s_timerIntervals[m_timerIntervalIndex]);
 }
 
 void RenderContainer::stopAnimation()
 {
-    m_renderWindow->stopAnimation();
+    m_renderWindows[m_renderMode]->stopAnimation();
 }
 
 void RenderContainer::setTimerInterval(int index)
@@ -86,32 +91,35 @@ void RenderContainer::setTimerInterval(int index)
     m_timerIntervalIndex = index;
     if (m_animationType != 0)
     {
-        m_renderWindow->stopAnimation();
-        m_renderWindow->startAnimation(static_cast<OpenGLWindow::AnimationType>(m_animationType),
+        m_renderWindows[m_renderMode]->stopAnimation();
+        m_renderWindows[m_renderMode]->startAnimation(static_cast<OpenGLWindow::AnimationType>(m_animationType),
                                        s_timerIntervals[m_timerIntervalIndex]);
     }
 }
 
 void RenderContainer::reloadRenderWindow()
 {
-    auto it = m_renderWindowLists.find(m_renderMode);
-    if (m_renderWindowLists.end() != it && !(*it)->getModelPath().compare(m_modelPath))
+    emit sigRenderWindowChange(m_renderMode);
+
+    auto it = m_renderWindows.find(m_renderMode);
+    if (m_renderWindows.end() != it && !(*it)->getModelPath().compare(m_modelPath))
+        return;
+    
+    if (m_renderWindows.end() == it)
+        m_renderWindows.insert(m_renderMode, nullptr);
+    else if (nullptr != m_renderWindows[m_renderMode])
     {
-        m_renderWindow = *it;
-    }
-    else
-    {
-        switch (m_renderMode)
-        {
-        case QT3D_MODE:
-            m_renderWindow.reset(new Qt3dWindow(m_modelPath, m_color, this));
-            break;
-        default:
-            m_renderWindow.reset(new OpenGLWindow(m_modelPath, m_color, this));
-            break;
-        }
-        m_renderWindowLists.insert(m_renderMode, m_renderWindow);
+        delete m_renderWindows[m_renderMode];
+        m_renderWindows[m_renderMode] = nullptr;
     }
 
-    emit sigRenderWindowChange(m_renderMode);
+    switch (m_renderMode)
+    {
+    case QT3D_MODE:
+        m_renderWindows[m_renderMode] = new Qt3DWindowContainer(m_modelPath, m_color, this);
+        break;
+    default:
+        m_renderWindows[m_renderMode] = new OpenGLWindow(m_modelPath, m_color, this);
+        break;
+    }
 }

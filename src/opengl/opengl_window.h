@@ -63,7 +63,7 @@ private:
 private:
     QString m_modelPath;
     QScopedPointer<QOpenGLShaderProgram> m_shaderProgram;
-    QVector<OpenGLHelper::ModelMesh> m_modelMeshs;
+    std::shared_ptr<QVector<OpenGLHelper::ModelMesh>> m_modelMeshsPtr;
     int m_cameraDistance = 20;
     OpenGLHelper::CameraParam m_camera;
     std::array<GLclampf, 4> m_bgColor;
