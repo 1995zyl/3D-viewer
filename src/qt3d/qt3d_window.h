@@ -4,10 +4,8 @@
 #include "i_draw_interface.h"
 #include <QWidget>
 #include <Qt3dwindow>
-#include <QCamera>
-#include <QPointlight>
-#include <QFirstpersoncameracontroller>
-#include <Qt3DRender/private/qsceneimporter_p.h>
+#include <QVector3D>
+
 
 class Q3DWindowEx;
 class Qt3DWindowContainer : public QWidget, public IDrawInterface
@@ -42,11 +40,6 @@ private:
     QWidget* m_3dContainer = nullptr;
     Q3DWindowEx* m_view = nullptr;
     Qt3DRender::QCamera* m_cameraEntity = nullptr;
-    Qt3DCore::QEntity* m_lightEntity = nullptr;
-    Qt3DRender::QPointLight* m_light = nullptr;
-    Qt3DCore::QTransform* m_lightTransform = nullptr;
-    Qt3DExtras::QFirstPersonCameraController* m_camController = nullptr;
-    Qt3DRender::QSceneImporter* m_pSceneImporter = nullptr;
     QColor m_bgColor;
 };
 

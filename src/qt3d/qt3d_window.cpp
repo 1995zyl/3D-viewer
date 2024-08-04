@@ -2,10 +2,14 @@
 #include "spdlog/spdlog.h"
 #include "opengl/opengl_helper.h"
 #include <QVBoxLayout>
-#include <Qt3DRender/private/qsceneimportfactory_p.h>
 #include <QInputAspect>
 #include <QForwardrenderer>
+#include <QFirstpersoncameracontroller>
+#include <QPointlight>
+#include <QCamera>
 #include <QMouseEvent>
+#include <Qt3DRender/private/qsceneimportfactory_p.h>
+#include <Qt3DRender/private/qsceneimporter_p.h>
 
 
 /// @brief 
@@ -22,15 +26,6 @@ Qt3DWindowContainer::Qt3DWindowContainer(const QString &modelPath, const QColor 
 
 Qt3DWindowContainer::~Qt3DWindowContainer()
 {
-	if (!m_modelPath.isEmpty())
-	{
-		delete m_cameraEntity;
-		delete m_camController;
-		delete m_light;
-		delete m_lightTransform;
-		delete m_lightEntity;
-		delete m_pSceneImporter;
-	}
 }
 
 void Qt3DWindowContainer::init3D(const QColor &color)
@@ -42,9 +37,9 @@ void Qt3DWindowContainer::init3D(const QColor &color)
 	m_3dContainer = QWidget::createWindowContainer(m_view);
 	vLayout->addWidget(m_3dContainer);
 
-	m_pSceneImporter = Qt3DRender::QSceneImportFactory::create("assimpEx", QStringList());
-	m_pSceneImporter->setSource(QUrl::fromLocalFile(m_modelPath));
-	Qt3DCore::QEntity *rootEntity = m_pSceneImporter->scene();
+	Qt3DRender::QSceneImporter* sceneImporter = Qt3DRender::QSceneImportFactory::create("assimpEx", QStringList()); //todo memory leak?
+	sceneImporter->setSource(QUrl::fromLocalFile(m_modelPath));
+	Qt3DCore::QEntity *rootEntity = sceneImporter->scene();
 	m_view->setRootEntity(rootEntity);
 
 	m_cameraEntity = m_view->camera();
@@ -53,17 +48,17 @@ void Qt3DWindowContainer::init3D(const QColor &color)
 	m_cameraEntity->setUpVector(QVector3D(0, 0, 0));
 	m_cameraEntity->setViewCenter(QVector3D(0, 0, 0));
 
-	m_lightEntity = new Qt3DCore::QEntity(rootEntity);
-	m_light = new Qt3DRender::QPointLight(m_lightEntity);
-	m_light->setColor("white");
-	m_light->setIntensity(1);
-	m_lightEntity->addComponent(m_light);
-	m_lightTransform = new Qt3DCore::QTransform(m_lightEntity);
-	m_lightTransform->setTranslation(m_view->getSuitableLightPos());
-	m_lightEntity->addComponent(m_lightTransform);
+	Qt3DCore::QEntity* lightEntity = new Qt3DCore::QEntity(rootEntity);
+	Qt3DRender::QPointLight* light = new Qt3DRender::QPointLight(lightEntity);
+	light->setColor("white");
+	light->setIntensity(1);
+	lightEntity->addComponent(light);
+	Qt3DCore::QTransform* lightTransform = new Qt3DCore::QTransform(lightEntity);
+	lightTransform->setTranslation(m_view->getSuitableLightPos());
+	lightEntity->addComponent(lightTransform);
 
-	m_camController = new Qt3DExtras::QFirstPersonCameraController(rootEntity);
-	m_camController->setCamera(m_cameraEntity);
+	Qt3DExtras::QFirstPersonCameraController* camController = new Qt3DExtras::QFirstPersonCameraController(rootEntity);
+	camController->setCamera(m_cameraEntity);
 }
 
 void Qt3DWindowContainer::resizeEx(const QSize &size)
