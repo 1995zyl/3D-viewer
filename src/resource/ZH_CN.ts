@@ -59,7 +59,7 @@
     <message>
         <location filename="../source/opengl_window.cpp" line="439"/>
         <source>frame rate</source>
-        <translation type="unfinished"></translation>
+        <translation>帧率</translation>
     </message>
 </context>
 </TS>
