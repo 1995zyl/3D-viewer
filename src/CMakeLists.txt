@@ -18,8 +18,6 @@ execute_qt_rcc("${CMAKE_CURRENT_SOURCE_DIR}/resource" "${CMAKE_CURRENT_BINARY_DI
 file(GLOB extral_comple_file "${CMAKE_CURRENT_BINARY_DIR}/*.cpp")
 add_executable(${TARGET} ${all_files} ${extral_comple_file})
 
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS OpenGL OpenGLWidgets 3DCore 3DRender 3DExtras 3DAnimation REQUIRED)
-
 add_definitions(-DSTART_INFO_CONSOLE) # 控制是否开启debug控制台，用于观察是否有报错日志
 add_definitions(-DSTB_IMAGE_IMPLEMENTATION) # 添加 stb图像库 预定义
 
