@@ -5,8 +5,8 @@ macro(find_qt_package)
     endif()
     
     set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_SDK_DIR})
-    find_package(QT NAMES Qt6 Qt5 COMPONENTS Core 3DCore 3DRender 3DExtras 3DAnimation REQUIRED)
-    find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core 3DCore 3DRender 3DExtras 3DAnimation REQUIRED)
+    find_package(QT NAMES Qt6 Qt5 COMPONENTS Core OpenGL OpenGLWidgets 3DCore 3DRender 3DExtras 3DAnimation REQUIRED)
+    find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core OpenGL OpenGLWidgets 3DCore 3DRender 3DExtras 3DAnimation REQUIRED)
     
     set(Qt_VERSION ${Qt${QT_VERSION_MAJOR}Core_VERSION})
     set(CMAKE_GLOBAL_AUTOGEN_TARGET OFF)
