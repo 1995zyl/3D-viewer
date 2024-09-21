@@ -21,6 +21,7 @@ message(STATUS "CMAKE_INSTALL_PREFIX = " ${CMAKE_INSTALL_PREFIX})
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/3d_viewer.cmake)
 find_qt_package()
+find_vulkan_package()
 find_assimp_library()
 find_stb_library()
 find_spdlog_library()

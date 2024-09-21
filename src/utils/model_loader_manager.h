@@ -1,37 +1,22 @@
-﻿#ifndef __OPENGL_HELPER_H__
-#define __OPENGL_HELPER_H__
+﻿#ifndef __MODEL_LOAD_MANAGER_H__
+#define __MODEL_LOAD_MANAGER_H__
 
-#include "assimp/scene.h"
+#include "lru_queue.h"
 #include <QString>
 #include <QVector>
 #include <QVector3D>
 #include <QMatrix4x4>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
-namespace OpenGLHelper
+#define OBJ_BYTE_COUNT ((3 + 2 + 3) * sizeof(float))
+
+class ModelLoadManager
 {
+public:
     //////////////////////////////////////////////////////////////////
-    // camera
-    struct CameraParam
-    {
-        float m_fovy = 45.0;                // 观察者视角的大小
-        float m_zoom = 1.0;                 // 观察者距被观察物体中心点的距离
-        QVector3D m_eye{0, 0, m_zoom * 20}; // 观察者在被观察物体的三维坐标系中的位置
-        QVector3D m_center{0.0, 0.0, 0.0};  // 观察者在被观察物体的三维坐标系中的位置
-        QVector3D m_up{0.0, 1.0, 0.0};      // 观察者的头部朝向
-        QMatrix4x4 m_projection;            // 透视矩阵
-        QMatrix4x4 m_translation;           // 平移矩阵
-        QMatrix4x4 m_rotation;              // 旋转矩阵
-        int m_xRot = 0;                     // 绕x轴旋转的角度
-        int m_yRot = 0;                     // 绕y轴旋转的角度
-        int m_zRot = 0;                     // 绕z轴旋转的角度
-        qreal m_xTrans = 0.0;               // 沿x轴移动的位置
-        qreal m_yTrans = 0.0;               // 沿y轴移动的位置
-        float m_zNear = 0.01;               // 透视矩阵视野最小值，太小容易出现黑影
-        float m_zFar = 10000.0;             // 透视矩阵视野最大值
-    };
-
-    //////////////////////////////////////////////////////////////////
-    // parse obj file
+    // parse obj file, not cache
     struct ObjData
     {
         QVector<float> m_vPoints;
@@ -40,7 +25,9 @@ namespace OpenGLHelper
     };
 
     bool parseObjModel(const QString &modelPath, ObjData &objData);
+    bool parseObjModel(const QString& modelPath, QByteArray& objData);
 
+public:
     /////////////////////////////////////////////////////////////////
     // assimp
     struct Vertex
@@ -75,8 +62,29 @@ namespace OpenGLHelper
     };
 
     bool import3DModel(const QString &modelPath, std::shared_ptr<QVector<ModelMesh>> &modelMeshsPtr);
+    bool import3DModel(const QString& modelPath, std::shared_ptr<QByteArray> &byteArrayPtr);
     float getModelMaxPos(const QString &modelPath);
     void cleanImageData(unsigned char *data);
+
+public:
+    static ModelLoadManager* instance();
+
+private:
+    ModelLoadManager();
+    ~ModelLoadManager();
+
+    bool parseObjModel(const QString& modelPath, QVector<float>& vertextPoints, QVector<float>& texturePoints, QVector<float>& normalPoints,
+        QVector<std::tuple<int, int, int>>& facesIndexs);
+    void  processNode(aiNode* node, const aiScene* scene, QVector<ModelMesh>& modelMeshs);
+    void  processMesh(aiMesh* mesh, const aiScene* scene, ModelMesh& modelMesh);
+    void  loadMaterialTextures(aiMaterial* mat, aiTextureType type, const std::string& typeName, const aiScene* scene, std::vector<Texture>& textures);
+
+private:
+    LRUQueue<QString, std::shared_ptr<QVector<ModelMesh>>> m_modelMeshMaps;
+    LRUQueue<QString, std::shared_ptr<QByteArray>> m_byteArrayMaps;
+    QMap<QString, float> m_modelMaxPosMaps;
+    QString m_currentModelName;
+    Assimp::Importer m_importer;
 };
 
 #endif

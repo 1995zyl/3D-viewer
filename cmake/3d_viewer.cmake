@@ -18,6 +18,10 @@ macro(find_qt_package)
     add_definitions(-DQT_SDK_DIR="${QT_SDK_DIR}")
 endmacro()
 
+macro(find_vulkan_package)
+    find_package(Vulkan REQUIRED)
+endmacro()
+
 macro(find_assimp_library)
     if(WIN32)
         set(SYSTEM_TYPE "win")

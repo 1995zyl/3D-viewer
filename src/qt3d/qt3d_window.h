@@ -28,7 +28,7 @@ public:
     void setBgColor(const QColor &color) override;
     QString getModelPath() const override { return m_modelPath; }
     void setWheelScale(float wheelScale){}
-    void startAnimation(int animationType, int millisecond){}
+    void startAnimation(int animationType){}
     void stopAnimation(){}
     void setCameraPos(const QVector3D& cameraPos);
 

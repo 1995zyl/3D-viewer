@@ -19,7 +19,6 @@ public slots:
     void onSelectBgColor();
     void onWheelScaleChanged(int value);
     void onAnimationTypeChanged(int index);
-    void onAnimationShowSpeedChanged(int value);
     void onRenderWindowChange(RenderContainer::RenderMode renderMode);
 
 private:
@@ -31,7 +30,6 @@ private:
     QPushButton *m_bgColorBtn = nullptr;
     QComboBox *m_wheelScaleCom = nullptr;
     QComboBox *m_animationCom = nullptr;
-    QComboBox *m_animationSpeedCom = nullptr;
     RenderContainer *m_renderContainer = nullptr;
     QString m_title;
 };

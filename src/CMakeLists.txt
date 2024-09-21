@@ -46,6 +46,7 @@ target_link_libraries(${TARGET}
 
 target_link_libraries(${TARGET} PRIVATE 
        opengl32
+       Vulkan::Vulkan
        ${ASSIMP_PATH}/lib/*.lib
 )
 

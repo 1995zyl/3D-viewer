@@ -7,6 +7,7 @@
 #define TIMER_ROTATE_ANGLE 45
 #define TIMER_ROTATE_NUM 50
 #define TIMER_HOVER_HEIGHT 3
+#define ANIMATION_TIME_INTERVAL 200
 
 static const std::array<float, 3> sLightPos{1.2f, 1.0f, 2.0f};
 static const std::array<float, 3> sLightColorLoc{1.0f, 1.0f, 1.0f};
@@ -24,7 +25,7 @@ OpenGLWindow::OpenGLWindow(const QString &modelPath, const QColor &color, QWidge
     m_modelPath = modelPath;
     if (!modelPath.isEmpty())
     {
-        OpenGLHelper::import3DModel(modelPath, m_modelMeshsPtr);
+        ModelLoadManager::instance()->import3DModel(modelPath, m_modelMeshsPtr);
         m_fpsLabel->show();
         m_fpsTimer.setInterval(1000);
         m_fpsTimer.start();
@@ -65,7 +66,7 @@ void OpenGLWindow::initializeZoom()
     if (!m_modelMeshsPtr || m_modelMeshsPtr->isEmpty())
         return;
 
-    float maxPosition = OpenGLHelper::getModelMaxPos(m_modelPath);
+    float maxPosition = ModelLoadManager::instance()->getModelMaxPos(m_modelPath);
     spdlog::info("model max position is {}.", maxPosition);
     if (maxPosition < 5)
     {
@@ -111,7 +112,6 @@ void OpenGLWindow::initializeGL()
 {
     initializeOpenGLFunctions();
     glEnable(GL_DEPTH_TEST);
-
     if (compileGLSL())
     {
         initializeMesh();
@@ -255,6 +255,8 @@ void OpenGLWindow::releasePos(Qt::MouseButton mbType)
         m_camera.m_xTrans = 0;
         m_camera.m_yTrans = 0;
         break;
+    default:
+        break;
     }
 }
 
@@ -292,7 +294,7 @@ void OpenGLWindow::initializeMesh()
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-            OpenGLHelper::cleanImageData(texture.m_data);
+            ModelLoadManager::instance()->cleanImageData(texture.m_data);
 
             texture.m_id = textureID;
         }
@@ -303,36 +305,36 @@ void OpenGLWindow::initializeMesh()
 
         glBindVertexArray(modelMesh.m_VAO);
         glBindBuffer(GL_ARRAY_BUFFER, modelMesh.m_VBO);
-        glBufferData(GL_ARRAY_BUFFER, modelMesh.m_vertices.size() * sizeof(OpenGLHelper::Vertex), &modelMesh.m_vertices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, modelMesh.m_vertices.size() * sizeof(ModelLoadManager::Vertex), &modelMesh.m_vertices[0], GL_STATIC_DRAW);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, modelMesh.m_EBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, modelMesh.m_indices.size() * sizeof(unsigned int), &modelMesh.m_indices[0], GL_STATIC_DRAW);
 
         // vertex Positions
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(OpenGLHelper::Vertex), (void *)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(ModelLoadManager::Vertex), (void *)0);
         glEnableVertexAttribArray(0);
 
         // vertex normals
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(OpenGLHelper::Vertex), (void *)offsetof(OpenGLHelper::Vertex, m_normals));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(ModelLoadManager::Vertex), (void *)offsetof(ModelLoadManager::Vertex, m_normals));
         glEnableVertexAttribArray(1);
 
         // vertex texture coords
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(OpenGLHelper::Vertex), (void *)offsetof(OpenGLHelper::Vertex, m_texCoords));
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(ModelLoadManager::Vertex), (void *)offsetof(ModelLoadManager::Vertex, m_texCoords));
         glEnableVertexAttribArray(2);
 
         // vertex tangent
-        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(OpenGLHelper::Vertex), (void *)offsetof(OpenGLHelper::Vertex, m_tangents));
+        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(ModelLoadManager::Vertex), (void *)offsetof(ModelLoadManager::Vertex, m_tangents));
         glEnableVertexAttribArray(3);
 
         // vertex bitangent
-        glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(OpenGLHelper::Vertex), (void *)offsetof(OpenGLHelper::Vertex, m_bitangents));
+        glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(ModelLoadManager::Vertex), (void *)offsetof(ModelLoadManager::Vertex, m_bitangents));
         glEnableVertexAttribArray(4);
 
         // ids
-        glVertexAttribIPointer(5, 4, GL_INT, sizeof(OpenGLHelper::Vertex), (void *)offsetof(OpenGLHelper::Vertex, m_boneIDs));
+        glVertexAttribIPointer(5, 4, GL_INT, sizeof(ModelLoadManager::Vertex), (void *)offsetof(ModelLoadManager::Vertex, m_boneIDs));
         glEnableVertexAttribArray(5);
 
         // weights
-        glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(OpenGLHelper::Vertex), (void *)offsetof(OpenGLHelper::Vertex, m_weights));
+        glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(ModelLoadManager::Vertex), (void *)offsetof(ModelLoadManager::Vertex, m_weights));
         glEnableVertexAttribArray(6);
 
         glBindVertexArray(0);
@@ -416,12 +418,12 @@ void OpenGLWindow::setWheelScale(float wheelScale)
     m_wheelScale = wheelScale;
 }
 
-void OpenGLWindow::startAnimation(int animationType, int millisecond)
+void OpenGLWindow::startAnimation(int animationType)
 {
     m_animationPos = 0;
     m_animationLoopNum = 0;
-    m_animationType = (AnimationType)animationType;
-    m_animationTimer.setInterval(millisecond);
+    m_animationType = (AnimationHelper::AnimationType)animationType;
+    m_animationTimer.setInterval(ANIMATION_TIME_INTERVAL);
     m_animationTimer.start();
 }
 
@@ -434,11 +436,11 @@ void OpenGLWindow::stopAnimation()
         Qt::MouseButton mbType;
         switch (m_animationType)
         {
-        case OpenGLWindow::Turntable:
-        case OpenGLWindow::Sway:
+        case AnimationHelper::Turntable:
+        case AnimationHelper::Sway:
             mbType = Qt::LeftButton;
             break;
-        case OpenGLWindow::Hover:
+        case AnimationHelper::Hover:
             mbType = Qt::RightButton;
             break;
         default:
@@ -462,11 +464,11 @@ void OpenGLWindow::onAnimationTimeOut()
 {
     switch (m_animationType)
     {
-    case Turntable:
+    case AnimationHelper::Turntable:
         m_animationPos += TIMER_ROTATE_ANGLE;
         m_camera.m_yRot = setRotation(m_animationPos);
         break;
-    case Sway:
+    case AnimationHelper::Sway:
         m_animationLoopNum = m_animationLoopNum % TIMER_ROTATE_NUM;
         if (m_animationLoopNum < TIMER_ROTATE_NUM / 2)
             m_animationPos += TIMER_ROTATE_ANGLE;
@@ -475,7 +477,7 @@ void OpenGLWindow::onAnimationTimeOut()
         ++m_animationLoopNum;
         m_camera.m_yRot = setRotation(m_animationPos);
         break;
-    case Hover:
+    case AnimationHelper::Hover:
     {
         m_animationLoopNum = m_animationLoopNum % TIMER_ROTATE_NUM;
         if (m_animationLoopNum < TIMER_ROTATE_NUM / 2)

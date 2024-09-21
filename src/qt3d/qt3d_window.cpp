@@ -1,6 +1,6 @@
 ﻿#include "qt3d_window.h"
 #include "spdlog/spdlog.h"
-#include "opengl/opengl_helper.h"
+#include "utils/model_loader_manager.h"
 #include <QVBoxLayout>
 #include <QInputAspect>
 #include <QForwardrenderer>
@@ -125,7 +125,7 @@ void Q3DWindowEx::mouseMoveEvent(QMouseEvent* e)
 
 QVector3D Q3DWindowEx::getSuitableCameraPos()
 {
-	float maxPosition = OpenGLHelper::getModelMaxPos(m_q3DWindowContainer->getModelPath());
+	float maxPosition = ModelLoadManager::instance()->getModelMaxPos(m_q3DWindowContainer->getModelPath());
 	QVector3D cameraPos;
 	if (maxPosition <= 1)
 	{
@@ -174,7 +174,7 @@ QVector3D Q3DWindowEx::getSuitableCameraPos()
 
 QVector3D Q3DWindowEx::getSuitableLightPos()
 {
-	float maxPosition = OpenGLHelper::getModelMaxPos(m_q3DWindowContainer->getModelPath());
+	float maxPosition = ModelLoadManager::instance()->getModelMaxPos(m_q3DWindowContainer->getModelPath());
 	QVector3D lightTransPos;
 	lightTransPos.setX(0);
 	lightTransPos.setY(maxPosition * 15);

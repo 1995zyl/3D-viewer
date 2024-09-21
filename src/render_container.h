@@ -11,6 +11,7 @@ public:
     enum RenderMode
     {
         OPNEGL_MODE,
+        VULKAN_MODE,
         QT3D_MODE,
     };
 
@@ -23,7 +24,6 @@ public:
     void setWheelScale(int index);
     void startAnimation(int index);
     void stopAnimation();
-    void setTimerInterval(int index);
 
 signals:
     void sigRenderWindowChange(RenderMode renderMode);
@@ -39,7 +39,6 @@ private:
     RenderMode m_renderMode;
     QColor m_color;
     int m_animationType = 0;
-    int m_timerIntervalIndex = 1;
     QString m_modelPath;
 };
 
